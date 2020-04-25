@@ -17,7 +17,7 @@ Analysis of employee information using SQL.
 - Data/mentorship_eligibility_info.csv
     - Data containing list of employees elegible for the mentorship program
 
-# Analysis and conclusions:
+# Technical analysis and conclusions:
 Per the request of management, I set out to find the number of employees per title who will be retiring and a list of employees eligible for the mentorship program. 
 
 The first step was to create an ERD to capture the relationship between Pewlett-Hackard's 6 different data sets (Departments, Employees, Titles, Deptartment Managers, Department Employees, and Salaries). To solve the problem, data would need to be combined from different sets. This relationship can be viewed visually in the EmployeeDB.png file. This visual relationship was used to create a SQL schema which can be viewed in the first half of the challenge_queries.sql file. This schema captured data titles, column titles, data types, primary keys, and foreign keys. The primary and foreign keys were used to connect the data relationships together so the sets could reference each other later. NOT NULL was used to tell SQL that no null fields will be allowed on import. 

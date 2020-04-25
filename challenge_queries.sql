@@ -105,23 +105,40 @@ GROUP BY (title)
 ORDER BY COUNT(emp_no) DESC;
 
 
--- Create a table of employees elegible for the mentorship program.
-SELECT e.emp_no, 
-	e.first_name, 
-	e.last_name,
-	t.title,
-	t.from_date,
-	t.to_date
---INTO mentorship_elegibility_info
-FROM employees as e
-	INNER JOIN titles as t
-		ON (e.emp_no = t.emp_no)
-	INNER JOIN dept_emp as de
-		ON (e.emp_no = de.emp_no)
-WHERE (e.birth_date BETWEEN '1965-01-01' AND '1965-12-31')
-	   AND (de.to_date = '9999-01-01')
-ORDER BY (e.emp_no);
-
+-- Create a table of employees eligible for the mentorship program.
+SELECT emp_no,
+	first_name,
+	last_name,
+	title,
+	from_date,
+	to_date
+INTO mentorship_eligibility_info
+FROM (SELECT emp_no,
+	 	first_name,
+		last_name,
+		title,
+		from_date,
+		to_date, 
+	  	-- Partition data to get only the employee's current title.
+	  	ROW_NUMBER() OVER
+		(PARTITION BY (emp_no)
+	 	ORDER BY from_date DESC) rn
+	 	-- Get employee information who are elegible for mentorship program.
+	  	FROM (SELECT e.emp_no, 
+					e.first_name, 
+					e.last_name,
+					t.title,
+					t.from_date,
+					t.to_date
+			  FROM employees as e
+				INNER JOIN titles as t
+					ON (e.emp_no = t.emp_no)
+				INNER JOIN dept_emp as de
+					ON (e.emp_no = de.emp_no)
+			  WHERE (e.birth_date BETWEEN '1965-01-01' AND '1965-12-31')
+	   				AND (de.to_date = '9999-01-01')) as rt
+	 	) tmp WHERE rn = 1
+ORDER BY (emp_no);
 
 
 

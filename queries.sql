@@ -242,3 +242,104 @@ WHERE d.dept_name IN ('Sales', 'Development');
 
 
 
+-- CLASS NOTES
+SELECT * FROM salaries;
+
+SELECT MIN(salary), MAX(salary), AVG(salary) 
+FROM salaries;
+
+SELECT gender, COUNT(1), MIN(hire_date) 
+FROM employees 
+GROUP BY gender;
+
+SELECT last_name, COUNT(1), MIN(hire_date) 
+FROM employees 
+GROUP BY last_name;
+
+SELECT last_name, gender, COUNT(1), MIN(hire_date) 
+FROM employees 
+GROUP BY last_name, gender
+ORDER BY last_name;
+
+
+-- Partition the data to show only the most recent title per employee.
+SELECT ce.emp_no,
+	ce.first_name,
+	ce.last_name,
+	t.title,
+	t.from_date,
+	t.to_date,
+	s.salary
+--INTO retiree_titles
+FROM current_emp as ce
+	INNER JOIN titles as t
+		ON (ce.emp_no = t.emp_no)
+	INNER JOIN salaries as s
+		ON (ce.emp_no = s.emp_no);
+
+
+SELECT emp_no,
+	first_name,
+	last_name,
+	title,
+	from_date,
+	salary
+--INTO retiring_titles_without_duplicates
+FROM (SELECT emp_no,
+	first_name,
+	last_name,
+	title,
+	from_date,
+	salary, ROW_NUMBER() OVER
+	(PARTITION BY (emp_no)
+	 ORDER BY from_date DESC) rn
+	 FROM retiree_titles
+	 ) tmp WHERE rn = 1
+ORDER BY (emp_no);
+
+
+
+
+
+SELECT emp_no,
+		first_name,
+		last_name,
+		title,
+		from_date,
+		salary
+INTO title_info
+FROM (SELECT emp_no,
+	 		  first_name,
+			  last_name,
+			  title,
+			  from_date,
+			  salary, ROW_NUMBER() OVER
+			  (PARTITION BY (emp_no)
+	 		  ORDER BY from_date DESC) rn
+	 		  FROM (SELECT ce.emp_no,
+				   			ce.first_name,
+				   			ce.last_name,
+					   		t.title,
+				   			t.from_date,
+				  			s.salary
+		   			FROM current_emp as ce
+		   				INNER JOIN titles as t
+							ON (ce.emp_no = t.emp_no)
+						INNER JOIN salaries as s
+							ON (ce.emp_no = s.emp_no)) as rt
+	 		   ) tmp WHERE rn = 1
+ORDER BY (emp_no);
+
+SELECT title, 
+		COUNT(emp_no) as number_retiring
+FROM title_info
+GROUP BY (title)
+ORDER BY COUNT(emp_no);
+
+
+
+
+
+
+
+
